@@ -10,8 +10,10 @@ const startServer = async () => {
 }
 startServer()
 const authRoutes = require('./routes/authRoute')
+const userRoutes = require('./routes/userRoute')
 app.use(express.json())
 app.use('/api/v1/auth', authRoutes)
+app.use('/api/v1/user', userRoutes)
 app.get('/', (req, res) => {
     res.send('Bienvenue sur mon api rest')
 })

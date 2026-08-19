@@ -22,8 +22,8 @@ exports.register = async (req, res) => {
         const existingUser = await sequelize.query('SELECT COUNT(email_user) FROM "Users" WHERE email_user = :email', {
             type: QueryTypes.SELECT,
             replacements: { email}
-        }) === 1
-        if(existingUser)
+        }) 
+        if(existingUser[0].count == 1)
             return res.status(400).json({message: 'Email is already use'})
         const isPasswordOk = validator.isStrongPassword(password,{
             minLength: 6,
@@ -42,7 +42,8 @@ exports.register = async (req, res) => {
             return res.status(400).json({message: "Please provide a valid role"})
 
         const hash = await bcrypt.hash(password, 15)
-        /*const user =*/ await sequelize.query('INSERT INTO "Users"(name_user, email_user, pass_user, picture_user, fk_id_role) VALUES (:name, :email, :password, :picture, :role) ', {
+
+        await sequelize.query('INSERT INTO "Users"(name_user, email_user, pass_user, picture_user, fk_id_role) VALUES (:name, :email, :password, :picture, :role) ', {
             type: QueryTypes.INSERT,
             replacements:{name, email, password: hash, picture, role}
         })
