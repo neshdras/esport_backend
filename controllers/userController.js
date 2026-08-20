@@ -130,6 +130,7 @@ exports.joinTeam = async (req, res) => {
         const isPlayerInTeam = await sequelize.query('select count(*) from "Teams_has_Users" where fk_id_team = :idTeam and fk_id_user = :idPlayer', {type: QueryTypes.SELECT, replacements:{idTeam, idPlayer}})
         if(isPlayerInTeam[0].count !=0)
             return res.status(401).json({message: "You are already in the team"})
+        
         await sequelize.query('insert into "Teams_has_Users"(fk_id_team, fk_id_user) values (:idTeam, :idPlayer)', {type: QueryTypes.INSERT, replacements:{idTeam, idPlayer}})
     
         res.status(200).json({message: `You have been add to ${team.name}` })

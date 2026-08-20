@@ -80,9 +80,11 @@ exports.updateTournament = async (req, res) => {
 
 //US-10
 exports.deleteTournament = async (req, res) => {
-    const idTournament = req.params.id
-    const idOrganizer = req.body.organizer
-    const existingTournament = await sequelize.query('SELECT COUNT(*) FROM "Tournaments" WHERE id_tournament = :idTournament AND fk_id_user = :idOrganizer', {
+    try {
+        
+        const idTournament = req.params.id
+        const idOrganizer = req.body.organizer
+        const existingTournament = await sequelize.query('SELECT COUNT(*) FROM "Tournaments" WHERE id_tournament = :idTournament AND fk_id_user = :idOrganizer', {
         type: QueryTypes.SELECT,
         replacements: {idTournament, idOrganizer}
     })
@@ -95,4 +97,69 @@ exports.deleteTournament = async (req, res) => {
         replacements:{idTournament}
     })
     res.status(200).json({message: "Tournament was remove"})
+} catch (err) {
+    res.status(500).json({message: err.message})
+}
+}
+
+//US-11
+exports.joinTournament = async (req, res) => {
+    try {
+        const {idTeam} = req.body
+        const idTournament = req.params.id
+    
+        const existingTournament = await sequelize.query('SELECT name_tournament AS name, COUNT(*) FROM "Tournaments" WHERE id_tournament = :idTournament GROUP BY id_tournament', {
+                type: QueryTypes.SELECT,
+                replacements: {idTournament}
+            })
+            
+        if(existingTournament[0].count =! 1)
+            return res.status(404).json({message: "Tournament not found"})
+    
+        const existingTeam = await sequelize.query('SELECT  COUNT(*) FROM "Teams" WHERE id_team = :idTeam', {
+                type: QueryTypes.SELECT,
+                replacements: {idTeam}
+            })
+            
+        if(existingTeam[0].count != 1)
+            return res.status(404).json({message: "Team not found"})
+    
+        await sequelize.query('INSERT INTO "Tournaments_has_Teams" VALUES (:idTournament, :idTeam)',{
+            type: QueryTypes.INSERT,
+            replacements:{idTeam, idTournament}
+        })
+        res.status(200).json({message: `Team add to ${existingTournament[0].name}`})
+    } catch (err) {
+        res.status(500).json({message: err.message})
+    }
+}
+
+//US-12
+exports.seeTournament = async (req, res) => {
+    try {
+        const date = new Date().toISOString()
+        const today = date.split("T")[0]
+    
+        const allTournament = await sequelize.query('SELECT * FROM "Tournaments" WHERE date_tournament > :date', {
+            type: QueryTypes.SELECT,
+            replacements:{date: today}
+        })
+        res.status(200).json(allTournament)
+    } catch (err) {
+        res.status(500).json({message: err.message})
+    }
+}
+
+//US-13
+exports.seeTeam = async (req, res) => {
+    try {
+        const { idOrganizer } = req.body
+        const getTeam = await sequelize.query('select t.name_team, c.name_tournament, c.game_tournament from "Tournaments" as c inner join  "Tournaments_has_Teams" as tu on c.id_tournament = tu.fk_id_tournament inner join "Teams" as t on tu.fk_id_team = t.id_team where c.fk_id_user = :idOrganizer order by c.id_tournament', {
+            type: QueryTypes.SELECT,
+            replacements: {idOrganizer}
+        })
+        res.status(200).json(getTeam)
+    } catch (err) {
+        res.status(500).json({message: err.message})
+    }
 }
