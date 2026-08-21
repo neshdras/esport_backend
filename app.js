@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 const port = 3000
+const cors = require('cors')
 require('dotenv').config()
 const { sequelize, connectDB } = require('./config/database')
 const startServer = async () => {
@@ -9,12 +10,12 @@ const startServer = async () => {
     console.log('Table sync')
 }
 startServer()
-app.use(
-    helmet({
-        contentSecurityPolicy: false,
-        crossOriginRessoucePolicy: { policy: "cross-origin" }
-    })
-)
+// app.use(
+//     helmet({
+//         contentSecurityPolicy: false,
+//         crossOriginRessoucePolicy: { policy: "cross-origin" }
+//     })
+// )
 const authRoutes = require('./routes/authRoute')
 const userRoutes = require('./routes/userRoute')
 const tournamentRoutes = require('./routes/tournamentRoute')

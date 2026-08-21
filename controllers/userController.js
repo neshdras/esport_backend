@@ -166,7 +166,31 @@ exports.removePlayer = async (req, res) => {
     }
 
 }
-
+//US-17
+exports.seeTeam = async (req, res) => {
+    try {
+        
+        const idTeam = req.params.id
+        const player = []
+        const existingTeam = await sequelize.query('select count(*) from "Teams" where id_team = :idTeam', {type: QueryTypes.SELECT, replacements: {idTeam}})
+        if(existingTeam[0].count == 0)
+            return res.status(404).json({message: "Team not found"})
+        
+        const queryTeam = await sequelize.query('select t.name_team as name, u.name_user as player from "Teams" as t inner join "Teams_has_Users" as tu on t.id_team = tu.fk_id_team inner join "Users" as u on tu.fk_id_user = u.id_user where id_team = :idTeam order by t.name_team', {type: QueryTypes.SELECT, replacements:{idTeam}})
+        for (const gamer of queryTeam) {
+            player.push(gamer.player)
+        }
+        const queryCaptain = await sequelize.query('select u.name_user as captain from "Users" as u inner join "Teams" as t on u.id_user = t.fk_id_user where t.id_team = :idTeam', {type: QueryTypes.SELECT, replacements:{idTeam}})
+        const team = {
+            name: queryTeam[0].name,
+            captain: queryCaptain[0].captain,
+            player
+        }
+        res.status(200).json(team)
+    } catch (err) {
+        res.status(500).json({message: err.message})
+    }
+}
 //US-18
 exports.seeInfo = async (req, res) => {
     const {idPlayer} = req.body
