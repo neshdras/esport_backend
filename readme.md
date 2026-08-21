@@ -87,18 +87,26 @@ Le serveur est accessible par défaut sur `http://localhost:3000`.
 | POST    | `/team/:id`                              | Ajouter un coéquipier dans l'équipe            | ✅ |
 | DELETE   | `/team/:id`                             | Enlever un joueur de l'équipe                  | ✅ |
 | GET     | `/:idTeam`                               | Détail d'une équipe                            | ✅ |
+| GET     | `/info                               | Détail des inscriptions                            | ✅ |
 
 ### 🏆 Tournament (`/api/v1/tournament`)
 
 | Méthode | Endpoint                              | Description                                  | Auth requise |
 |---------|------------------------------------------|------------------------------------------------|:---:|
-| POST    | `/new`                                   | Création d'un tournoi                          | ✅ |
-| PATCH   | `/update-tournament/:id`                 | Mise à jour d'un tournoi                       | ✅ |
+| POST    | `/create`                                   | Création d'un tournoi                          | ✅ |
+| PATCH   | `/update/:id`                 | Mise à jour d'un tournoi                       | ✅ |
 | DELETE  | `/delete/:id`                            | Suppression d'un tournoi                       | ✅ |
-| GET     | `/`                                      | Liste des tournois ouverts                     | ✅ |
-| GET     | `/:idTournament`                         | Détail des équipes inscrites à un tournoi      | ✅ |
-| GET     | `/team-registered/:idTournament`         | Nombre d'équipes inscrites                     | ✅ |
-| GET     | `/check/:idTeam`                         | Vérification du statut d'inscription           | ✅ |
+| POST     | `/join/:id`                                      | Inscrire l'équipe au tournoi                    | ✅ |
+| GET     | `/team                         | Détail des équipes inscrites à un tournoi      | ✅ |
+| GET     | `/all`         |Lister tous les tournois ouverts                     | ✅ |
+
+### 🔑 Admin (`/api/v1/admin`)
+
+| Méthode | Endpoint                    | Description                              | Auth requise |
+|---------|-------------------------------|--------------------------------------------|:---:|
+| DELETE    | `/delete/team`              | Suppression d'une team                 | ✅|
+| GET    | `/stat`                      | Recuperer les statistiques des tournoi       | ✅|
+| PATCH    | `/role`                      | Modification du role                        | ✅|
 
 > ℹ️ Tous les endpoints protégés passent par `authMiddleware` (vérification du token JWT).
 
@@ -112,14 +120,7 @@ Le serveur est accessible par défaut sur `http://localhost:3000`.
 - **Validation des entrées** sur tous les endpoints sensibles (POST/PATCH)
 - **Protection contre le mass assignment** : seuls les champs autorisés sont pris en compte lors des mises à jour, empêchant un utilisateur de modifier des champs sensibles (ex. `role`, `isAdmin`) via le body de la requête
 
-## 🧪 Tests
-
-Les tests d'intégration couvrent 18 user stories et utilisent le test runner natif de Node.js.
-
-```bash
-npm run test:all
-```
 
 ## 👤 Auteur
 
-**Enzo** — [@Arkanona](https://github.com/Arkanona)
+**Antonin** — [@neshdras](https://github.com/neshdras)
