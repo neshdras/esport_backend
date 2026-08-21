@@ -44,8 +44,8 @@ exports.updateTournament = async (req, res) => {
         type: QueryTypes.SELECT,
         replacements: {idTournament, idOrganizer}
     })
-    
     const tournament = queryTournament[0]
+
     if(tournament == null)
         return res.status(404).json({message: "Tournament not found"})
 

@@ -3,7 +3,7 @@ const { sequelize } = require("../config/database")
 const bcrypt = require('bcryptjs')
 
 //US4
-exports.profile = async (req, res) =>{
+exports.profileUpdate = async (req, res) =>{
     try {
         const id = req.params.id
         const body = req.body
@@ -163,6 +163,61 @@ exports.removePlayer = async (req, res) => {
         res.json({message: "Player has been removed from the team"})
     } catch (err) {
         res.status(500).json({message: err.message})
+    }
+
+}
+
+//US-18
+exports.seeInfo = async (req, res) => {
+    const {idPlayer} = req.body
+    const allList = []
+    const allTournament = []
+    const existingPlayer = await sequelize.query('select count(id_user) from "Users" where id_user= :idPlayer',{type: QueryTypes.SELECT, replacements:{ idPlayer }})
+    
+    if(existingPlayer[0].count != 1)
+        return res.status(404).json({message: "User not found"})
+
+    const teamCapt = await sequelize.query('select id_team as idTeam, name_team as name from "Teams" where fk_id_user = :idPlayer', {type: QueryTypes.SELECT, replacements: {idPlayer}})
+
+    if(teamCapt.length != 0)
+        teamCapt.forEach((el)=>{allList.push(el)})
+    
+    
+    const isPlayerInTeam = await sequelize.query('select count(*) from "Teams_has_Users" where fk_id_user = :idPlayer', {type: QueryTypes.SELECT, replacements:{idPlayer}})
+    
+    if(isPlayerInTeam[0].count == 0 && teamCapt.length == 0)
+        return res.status(401).json({message: "User not in team"})
+    
+    const list = await sequelize.query('select tu.fk_id_team as idTeam, t.name_team as name from "Teams_has_Users" as tu inner join "Teams" as t on tu.fk_id_team = t.id_team where tu.fk_id_user = :idPlayer', {type: QueryTypes.SELECT, replacements:{idPlayer}})
+    list.forEach((el)=>{
+        allList.push(el)
+    })
+    
+    const date = new Date().toISOString()
+    const today = date.split("T")[0]
+    for(const team of allList){
+        
+        const queryTournament = await sequelize.query('select t.name_tournament as nametournament, t.date_tournament as date from "Tournaments" as t inner join "Tournaments_has_Teams" as "tt" on t.id_tournament = tt.fk_id_tournament where tt.fk_id_team = :id and t.date_tournament > :date ORDER BY t.name_tournament',
+            {
+                type: QueryTypes.SELECT,
+                replacements:{id: team.idteam, date: today}
+            }
+        )
+        for (const element of queryTournament) {
+            const nameTournament = element.nametournament
+            const info = {
+                nameTeam : team.name,
+                nameTournament: nameTournament
+            }
+             allTournament.push(info)
+            
+        }
+    }
+    
+    if (allTournament.length > 0) {
+        res.json(allTournament)
+    } else {
+        res.status(200).json({message: "Team in none tournament"})
     }
 
 }
